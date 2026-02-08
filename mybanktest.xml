@@ -8,13 +8,13 @@
 	<test name="Chrome Test">
 		<parameter name="browser" value="chrome"></parameter>
 		<classes>
-			<class name="com.Finaltest.ParaBank" />
+			<class name="com.Finaltest.ParaBankTest" />
 		</classes>
 	</test>
 	<test name="Edge Test">
 		<parameter name="browser" value="edge"></parameter>
 		<classes>
-			<class name="com.Finaltest.ParaBank"></class>
+			<class name="com.Finaltest.ParaBankTest"></class>
 		</classes>
 	</test>
 </suite>
