@@ -1,4 +1,5 @@
 package com.Finaltest;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -52,7 +53,7 @@ public class Baseoneprt {
         extent = new ExtentReports();
         extent.attachReporter(report);
         extent.setSystemInfo("QA Tester", "Syedabuthaheer");
-        extent.setSystemInfo("Environment", "Jenkins CI/CD");
+        extent.setSystemInfo("Environment", "Jenkins");
     }
 
     @Parameters("browser")
@@ -62,13 +63,10 @@ public class Baseoneprt {
         WebDriver driver = null;
         
         try {
-            // ================= CHROME BROWSER =================
             if (browserName.equalsIgnoreCase("chrome")) {
                 try {
-                    WebDriverManager.chromedriver().setup();
-                } catch (Exception e) {
-                    System.out.println("Chrome Driver Download Failed (Network Issue). Trying local driver...");
-                }
+                    WebDriverManager.chromedriver().setup(); 
+                } catch (Exception e) {}
                 
                 ChromeOptions options = new ChromeOptions();
                 options.addArguments("--headless"); 
@@ -77,16 +75,15 @@ public class Baseoneprt {
                 options.addArguments("--no-sandbox");
                 options.addArguments("--disable-dev-shm-usage");
                 options.addArguments("--remote-allow-origins=*");
+                // System User Crash Fix for Chrome
+                options.addArguments("--user-data-dir=" + System.getProperty("java.io.tmpdir") + "\\ChromeProfile");
                 
                 driver = new ChromeDriver(options);
             } 
-    
             else if (browserName.equalsIgnoreCase("edge")) {
                 try {
                     WebDriverManager.edgedriver().setup(); 
-                } catch (Exception e) {
-                    System.out.println("Edge Driver Download Failed (Network Issue). Trying local driver...");
-                }
+                } catch (Exception e) {}
                 
                 EdgeOptions options = new EdgeOptions();
                 options.addArguments("--headless"); 
@@ -95,6 +92,9 @@ public class Baseoneprt {
                 options.addArguments("--no-sandbox");
                 options.addArguments("--disable-dev-shm-usage");
                 options.addArguments("--remote-allow-origins=*");
+                String tempDir = System.getProperty("java.io.tmpdir") + "\\EdgeProfile_" + System.currentTimeMillis();
+                options.addArguments("--user-data-dir=" + tempDir);
+                options.addArguments("--remote-debugging-port=9222"); 
                 
                 driver = new EdgeDriver(options);
             }
@@ -110,16 +110,11 @@ public class Baseoneprt {
                 
                 driver = new FirefoxDriver(options);
             }
-
-            
             if(driver != null) {
                 tdriver.set(driver);
                 getDriver().manage().window().maximize();
-                
-                
                 getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(60));
                 getDriver().manage().timeouts().pageLoadTimeout(Duration.ofSeconds(120));
-                
                 getDriver().get("https://parabank.parasoft.com/parabank/index.htm");
             }
             
@@ -145,7 +140,7 @@ public class Baseoneprt {
 
     public String TakemyScreenshot(String testname) throws IOException {
         if (getDriver() == null) {
-            return null;
+            return null; 
         }
         
         try {
