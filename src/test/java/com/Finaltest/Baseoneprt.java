@@ -45,9 +45,7 @@ public class Baseoneprt {
 
     @BeforeSuite(groups = { "Smoke", "Regression", "Sanity" })
     public void TakeMyReport() {
-        
         String reportPath = System.getProperty("user.dir") + "\\reports\\mytest.html";
-        
         ExtentSparkReporter report = new ExtentSparkReporter(reportPath);
         report.config().setReportName("My Automation Test");
         report.config().setDocumentTitle("My Test Result");
@@ -60,7 +58,7 @@ public class Baseoneprt {
 
     @Parameters("browser")
     @BeforeMethod(groups = { "Smoke", "Regression", "Sanity" })
-    public void Browserlanuch(@Optional("edge") String browserName) {
+    public void Browserlanuch(@Optional("chrome") String browserName) {
         
         WebDriver driver = null;
         
@@ -77,10 +75,9 @@ public class Baseoneprt {
                 options.addArguments("--disable-dev-shm-usage");
                 options.addArguments("--remote-allow-origins=*");
                 
-                // Chrome Profile Folder in C:\Temp
-                String chromeProfile = "C:\\Temp\\ChromeProfile";
-                new File(chromeProfile).mkdirs(); 
-                options.addArguments("--user-data-dir=" + chromeProfile);
+                
+                String userHome = System.getProperty("user.home");
+                options.addArguments("--user-data-dir=" + userHome + "\\ChromeProfile");
                 
                 driver = new ChromeDriver(options);
             } 
@@ -96,12 +93,10 @@ public class Baseoneprt {
                 options.addArguments("--disable-dev-shm-usage");
                 options.addArguments("--remote-allow-origins=*");
                 
-                
-                String edgeProfile = "C:\\Temp\\EdgeProfile_" + System.currentTimeMillis();
-                File profileDir = new File(edgeProfile);
-                if (!profileDir.exists()) {
-                    profileDir.mkdirs();
-                }
+            
+                String userHome = System.getProperty("user.home");
+                String edgeProfile = userHome + "\\EdgeProfile_" + System.currentTimeMillis();
+                new File(edgeProfile).mkdirs();
                 
                 options.addArguments("--user-data-dir=" + edgeProfile);
                 options.addArguments("--remote-debugging-port=9222");
@@ -118,6 +113,7 @@ public class Baseoneprt {
                 driver = new FirefoxDriver(options);
             }
 
+            
             if(driver != null) {
                 tdriver.set(driver);
                 getDriver().manage().window().maximize();
@@ -146,11 +142,10 @@ public class Baseoneprt {
         }
     }
 
-    public String TakemyScreenshot(String testname) throws IOException {
-        
+    public String TakemyScreenshot(String testname) throws IOException {    
         if (getDriver() == null) {
-            System.out.println("Driver is NULL. Cannot take screenshot.");
-            return "";
+            System.out.println("Driver is NULL. Cannot take screenshot for test: " + testname);
+            return ""; 
         }
         
         try {
