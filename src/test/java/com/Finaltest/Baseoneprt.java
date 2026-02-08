@@ -45,7 +45,9 @@ public class Baseoneprt {
 
     @BeforeSuite(groups = { "Smoke", "Regression", "Sanity" })
     public void TakeMyReport() {
+        
         String reportPath = System.getProperty("user.dir") + "\\reports\\mytest.html";
+        
         ExtentSparkReporter report = new ExtentSparkReporter(reportPath);
         report.config().setReportName("My Automation Test");
         report.config().setDocumentTitle("My Test Result");
@@ -58,58 +60,64 @@ public class Baseoneprt {
 
     @Parameters("browser")
     @BeforeMethod(groups = { "Smoke", "Regression", "Sanity" })
-    public void Browserlanuch(@Optional("chrome") String browserName) {
+    public void Browserlanuch(@Optional("edge") String browserName) {
         
         WebDriver driver = null;
         
         try {
+            
             if (browserName.equalsIgnoreCase("chrome")) {
-                try {
-                    WebDriverManager.chromedriver().setup(); 
-                } catch (Exception e) {}
+                try { WebDriverManager.chromedriver().setup(); } catch (Exception e) {}
                 
                 ChromeOptions options = new ChromeOptions();
-                options.addArguments("--headless"); 
+                options.addArguments("--headless=new");
                 options.addArguments("--disable-gpu");
                 options.addArguments("--window-size=1920,1080");
                 options.addArguments("--no-sandbox");
                 options.addArguments("--disable-dev-shm-usage");
                 options.addArguments("--remote-allow-origins=*");
-                // System User Crash Fix for Chrome
-                options.addArguments("--user-data-dir=" + System.getProperty("java.io.tmpdir") + "\\ChromeProfile");
+                
+                // Chrome Profile Folder in C:\Temp
+                String chromeProfile = "C:\\Temp\\ChromeProfile";
+                new File(chromeProfile).mkdirs(); 
+                options.addArguments("--user-data-dir=" + chromeProfile);
                 
                 driver = new ChromeDriver(options);
             } 
+            
             else if (browserName.equalsIgnoreCase("edge")) {
-                try {
-                    WebDriverManager.edgedriver().setup(); 
-                } catch (Exception e) {}
+                try { WebDriverManager.edgedriver().setup(); } catch (Exception e) {}
                 
                 EdgeOptions options = new EdgeOptions();
-                options.addArguments("--headless"); 
+                options.addArguments("--headless=new");
                 options.addArguments("--disable-gpu");
                 options.addArguments("--window-size=1920,1080");
                 options.addArguments("--no-sandbox");
                 options.addArguments("--disable-dev-shm-usage");
                 options.addArguments("--remote-allow-origins=*");
-                String tempDir = System.getProperty("java.io.tmpdir") + "\\EdgeProfile_" + System.currentTimeMillis();
-                options.addArguments("--user-data-dir=" + tempDir);
-                options.addArguments("--remote-debugging-port=9222"); 
+                
+                
+                String edgeProfile = "C:\\Temp\\EdgeProfile_" + System.currentTimeMillis();
+                File profileDir = new File(edgeProfile);
+                if (!profileDir.exists()) {
+                    profileDir.mkdirs();
+                }
+                
+                options.addArguments("--user-data-dir=" + edgeProfile);
+                options.addArguments("--remote-debugging-port=9222");
                 
                 driver = new EdgeDriver(options);
             }
             
             else if (browserName.equalsIgnoreCase("firefox")) {
-                try {
-                    WebDriverManager.firefoxdriver().setup();
-                } catch (Exception e) {}
+                try { WebDriverManager.firefoxdriver().setup(); } catch (Exception e) {}
                 
                 FirefoxOptions options = new FirefoxOptions();
                 options.addArguments("--headless");
                 options.addArguments("--window-size=1920,1080");
-                
                 driver = new FirefoxDriver(options);
             }
+
             if(driver != null) {
                 tdriver.set(driver);
                 getDriver().manage().window().maximize();
@@ -139,20 +147,26 @@ public class Baseoneprt {
     }
 
     public String TakemyScreenshot(String testname) throws IOException {
+        
         if (getDriver() == null) {
-            return null; 
+            System.out.println("Driver is NULL. Cannot take screenshot.");
+            return "";
         }
         
         try {
             String mytime = new SimpleDateFormat("yyyyMMddmmss").format(new Date());
             TakesScreenshot ts = (TakesScreenshot) getDriver();
             File source = ts.getScreenshotAs(OutputType.FILE);
-            String location = System.getProperty("user.dir") + "\\Screenshot\\" + testname + "_" + mytime + ".png";
+            
+            String folderPath = System.getProperty("user.dir") + "\\Screenshot\\";
+            new File(folderPath).mkdirs();
+            
+            String location = folderPath + testname + "_" + mytime + ".png";
             FileUtils.copyFile(source, new File(location));
             return location;
         } catch (Exception e) {
             System.out.println("Screenshot Error: " + e.getMessage());
-            return null;
+            return "";
         }
     }
 
