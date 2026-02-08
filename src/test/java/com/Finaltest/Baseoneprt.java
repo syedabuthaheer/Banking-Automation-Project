@@ -51,20 +51,36 @@ public class Baseoneprt {
 
 	@Parameters("browser")
 	@BeforeMethod(groups = { "Smoke", "Regression", "Sanity" })
-	public void Browserlanuch(String browserName) {
-		WebDriver driver = null;
-		if (browserName.equalsIgnoreCase("chrome")) {
-			driver = new ChromeDriver();
-		} else if (browserName.equalsIgnoreCase("edge")) {
-			driver = new EdgeDriver();
-		} else if (browserName.equalsIgnoreCase("firefox")) {
-			driver = new FirefoxDriver();
-		}
-		tdriver.set(driver);
+	public void Browserlanuch(@Optional("chrome")String browserName) {
+		try {
+        if (browser.equalsIgnoreCase("chrome")) {
+            WebDriverManager.chromedriver().setup();
+            ChromeOptions options = new ChromeOptions();
+            options.addArguments("--headless");
+            options.addArguments("--disable-gpu");
+            options.addArguments("--window-size=1920,1080");
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
+            options.addArguments("--remote-allow-origins=*");
+            driver = new ChromeDriver(options);
+        } else if (browser.equalsIgnoreCase("edge")) {
+            WebDriverManager.edgedriver().setup();
+            EdgeOptions options = new EdgeOptions();
+            options.addArguments("--headless");
+            options.addArguments("--disable-gpu");
+            options.addArguments("--window-size=1920,1080");
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
+            options.addArguments("--remote-allow-origins=*");
+            driver = new EdgeDriver(options);
+        }
+        driver.manage().window().maximize();
+        driver.manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(20));
+        driver.get("https://parabank.parasoft.com/parabank/index.htm");
 
-		getDriver().get("https://parabank.parasoft.com/parabank/index.htm");
-		getDriver().manage().window().maximize();
-
+    } catch (Exception e) {
+        System.out.println("Browserlaungh Error " + e.getMessage());
+    }
 	}
 
 	@AfterMethod(groups = { "Smoke", "Regression", "Sanity" })
