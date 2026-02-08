@@ -45,6 +45,9 @@ public class Baseoneprt {
 
     @BeforeSuite(groups = { "Smoke", "Regression", "Sanity" })
     public void TakeMyReport() {
+        
+        new File("C:\\Temp").mkdirs();
+        
         String reportPath = System.getProperty("user.dir") + "\\reports\\mytest.html";
         ExtentSparkReporter report = new ExtentSparkReporter(reportPath);
         report.config().setReportName("My Automation Test");
@@ -53,7 +56,7 @@ public class Baseoneprt {
         extent = new ExtentReports();
         extent.attachReporter(report);
         extent.setSystemInfo("QA Tester", "Syedabuthaheer");
-        extent.setSystemInfo("Environment", "Jenkins");
+        extent.setSystemInfo("Environment", "Jenkins - SYSTEM User");
     }
 
     @Parameters("browser")
@@ -63,12 +66,12 @@ public class Baseoneprt {
         WebDriver driver = null;
         
         try {
-            
+        
             if (browserName.equalsIgnoreCase("chrome")) {
                 try { WebDriverManager.chromedriver().setup(); } catch (Exception e) {}
                 
                 ChromeOptions options = new ChromeOptions();
-                options.addArguments("--headless=new");
+                options.addArguments("--headless=new"); 
                 options.addArguments("--disable-gpu");
                 options.addArguments("--window-size=1920,1080");
                 options.addArguments("--no-sandbox");
@@ -76,8 +79,9 @@ public class Baseoneprt {
                 options.addArguments("--remote-allow-origins=*");
                 
                 
-                String userHome = System.getProperty("user.home");
-                options.addArguments("--user-data-dir=" + userHome + "\\ChromeProfile");
+                String chromeData = "C:\\Temp\\ChromeData_" + System.nanoTime();
+                new File(chromeData).mkdirs();
+                options.addArguments("--user-data-dir=" + chromeData);
                 
                 driver = new ChromeDriver(options);
             } 
@@ -89,21 +93,19 @@ public class Baseoneprt {
                 options.addArguments("--headless=new");
                 options.addArguments("--disable-gpu");
                 options.addArguments("--window-size=1920,1080");
-                options.addArguments("--no-sandbox");
+                options.addArguments("--no-sandbox"); 
                 options.addArguments("--disable-dev-shm-usage");
                 options.addArguments("--remote-allow-origins=*");
                 
-            
-                String userHome = System.getProperty("user.home");
-                String edgeProfile = userHome + "\\EdgeProfile_" + System.currentTimeMillis();
-                new File(edgeProfile).mkdirs();
                 
-                options.addArguments("--user-data-dir=" + edgeProfile);
+                String edgeData = "C:\\Temp\\EdgeData_" + System.nanoTime();
+                new File(edgeData).mkdirs();
+                options.addArguments("--user-data-dir=" + edgeData);
                 options.addArguments("--remote-debugging-port=9222");
                 
                 driver = new EdgeDriver(options);
             }
-            
+        
             else if (browserName.equalsIgnoreCase("firefox")) {
                 try { WebDriverManager.firefoxdriver().setup(); } catch (Exception e) {}
                 
@@ -113,7 +115,7 @@ public class Baseoneprt {
                 driver = new FirefoxDriver(options);
             }
 
-            
+        
             if(driver != null) {
                 tdriver.set(driver);
                 getDriver().manage().window().maximize();
@@ -142,17 +144,16 @@ public class Baseoneprt {
         }
     }
 
-    public String TakemyScreenshot(String testname) throws IOException {    
+    public String TakemyScreenshot(String testname) throws IOException {
         if (getDriver() == null) {
-            System.out.println("Driver is NULL. Cannot take screenshot for test: " + testname);
-            return ""; 
+            System.out.println("Driver is NULL. Returning dummy path.");
+            return System.getProperty("user.dir") + "\\reports\\no_image.png"; 
         }
         
         try {
             String mytime = new SimpleDateFormat("yyyyMMddmmss").format(new Date());
             TakesScreenshot ts = (TakesScreenshot) getDriver();
             File source = ts.getScreenshotAs(OutputType.FILE);
-            
             String folderPath = System.getProperty("user.dir") + "\\Screenshot\\";
             new File(folderPath).mkdirs();
             
@@ -161,7 +162,7 @@ public class Baseoneprt {
             return location;
         } catch (Exception e) {
             System.out.println("Screenshot Error: " + e.getMessage());
-            return "";
+            return System.getProperty("user.dir") + "\\reports\\error_image.png";
         }
     }
 
