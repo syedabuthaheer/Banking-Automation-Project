@@ -93,8 +93,8 @@ public class Baseoneprt {
                 WebDriverManager.firefoxdriver().setup();
                 
                 FirefoxOptions options = new FirefoxOptions();
-                options.addArgument("--headless");
-                options.addArgument("--window-size=1920,1080");
+                options.addArguments("--headless");
+                options.addArguments("--window-size=1920,1080");
                 
                 driver = new FirefoxDriver(options);
             }
