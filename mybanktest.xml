@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Banking Project" thread-count="2">
+	<listeners>
+		<listener class-name="com.Finaltest.MyListener"></listener>
+		<listener class-name="com.Finaltest.MyTransfer"></listener>
+	</listeners>
+	<test name="Chrome Test">
+		<parameter name="browser" value="chrome"></parameter>
+		<classes>
+			<class name="com.Finaltest.ParaBank" />
+		</classes>
+	</test>
+	<test name="Edge Test">
+		<parameter name="browser" value="edge"></parameter>
+		<classes>
+			<class name="com.Finaltest.ParaBank"></class>
+		</classes>
+	</test>
+</suite>
