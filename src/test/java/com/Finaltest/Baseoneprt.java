@@ -1,4 +1,5 @@
 package com.Finaltest;
+package com.Finaltest;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +35,7 @@ import com.aventstack.extentreports.reporter.configuration.Theme;
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 public class Baseoneprt {
+    
     public static ThreadLocal<WebDriver> tdriver = new ThreadLocal<>();
     public static ExtentReports extent;
     public static ExtentTest test;
@@ -45,7 +47,6 @@ public class Baseoneprt {
     @BeforeSuite(groups = { "Smoke", "Regression", "Sanity" })
     public void TakeMyReport() {
         String reportPath = System.getProperty("user.dir") + "\\reports\\mytest.html";
-        
         ExtentSparkReporter report = new ExtentSparkReporter(reportPath);
         report.config().setReportName("My Automation Test");
         report.config().setDocumentTitle("My Test Result");
@@ -53,7 +54,7 @@ public class Baseoneprt {
         extent = new ExtentReports();
         extent.attachReporter(report);
         extent.setSystemInfo("QA Tester", "Syedabuthaheer");
-        extent.setSystemInfo("OS", System.getProperty("os.name"));
+        extent.setSystemInfo("Environment", "Jenkins CI/CD");
     }
 
     @Parameters("browser")
@@ -63,11 +64,16 @@ public class Baseoneprt {
         WebDriver driver = null;
         
         try {
+            // ================= CHROME BROWSER =================
             if (browserName.equalsIgnoreCase("chrome")) {
-                WebDriverManager.chromedriver().setup();
+                try {
+                    WebDriverManager.chromedriver().setup();
+                } catch (Exception e) {
+                    System.out.println("Chrome Driver Download Failed (Network Issue). Trying local driver...");
+                }
                 
                 ChromeOptions options = new ChromeOptions();
-                options.addArguments("--headless");
+                options.addArguments("--headless"); 
                 options.addArguments("--disable-gpu");
                 options.addArguments("--window-size=1920,1080");
                 options.addArguments("--no-sandbox");
@@ -75,12 +81,17 @@ public class Baseoneprt {
                 options.addArguments("--remote-allow-origins=*");
                 
                 driver = new ChromeDriver(options);
-                
-            } else if (browserName.equalsIgnoreCase("edge")) {
-                WebDriverManager.edgedriver().setup();
+            } 
+    
+            else if (browserName.equalsIgnoreCase("edge")) {
+                try {
+                    WebDriverManager.edgedriver().setup(); 
+                } catch (Exception e) {
+                    System.out.println("Edge Driver Download Failed (Network Issue). Trying local driver...");
+                }
                 
                 EdgeOptions options = new EdgeOptions();
-                options.addArguments("--headless");
+                options.addArguments("--headless"); 
                 options.addArguments("--disable-gpu");
                 options.addArguments("--window-size=1920,1080");
                 options.addArguments("--no-sandbox");
@@ -88,9 +99,12 @@ public class Baseoneprt {
                 options.addArguments("--remote-allow-origins=*");
                 
                 driver = new EdgeDriver(options);
-                
-            } else if (browserName.equalsIgnoreCase("firefox")) {
-                WebDriverManager.firefoxdriver().setup();
+            }
+            
+            else if (browserName.equalsIgnoreCase("firefox")) {
+                try {
+                    WebDriverManager.firefoxdriver().setup();
+                } catch (Exception e) {}
                 
                 FirefoxOptions options = new FirefoxOptions();
                 options.addArguments("--headless");
@@ -98,17 +112,21 @@ public class Baseoneprt {
                 
                 driver = new FirefoxDriver(options);
             }
+
             
             if(driver != null) {
                 tdriver.set(driver);
                 getDriver().manage().window().maximize();
-                getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
-                getDriver().manage().timeouts().pageLoadTimeout(Duration.ofSeconds(40));
+                
+                
+                getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(60));
+                getDriver().manage().timeouts().pageLoadTimeout(Duration.ofSeconds(120));
+                
                 getDriver().get("https://parabank.parasoft.com/parabank/index.htm");
             }
             
         } catch (Exception e) {
-            System.out.println("Browser Launch Error: " + e.getMessage());
+            System.out.println("CRITICAL ERROR: Browser Launch Failed: " + e.getMessage());
         }
     }
 
@@ -116,7 +134,7 @@ public class Baseoneprt {
     public void Browserclosed() {
         if (getDriver() != null) {
             getDriver().quit();
-            tdriver.remove(); // ThreadLocal-ஐ சுத்தம் செய்தல்
+            tdriver.remove();
         }
     }
 
@@ -128,19 +146,26 @@ public class Baseoneprt {
     }
 
     public String TakemyScreenshot(String testname) throws IOException {
-        if (getDriver() == null) return null;
+        if (getDriver() == null) {
+            return null;
+        }
         
-        String mytime = new SimpleDateFormat("yyyyMMddmmss").format(new Date());
-        TakesScreenshot ts = (TakesScreenshot) getDriver();
-        File source = ts.getScreenshotAs(OutputType.FILE);
-        String location = System.getProperty("user.dir") + "\\Screenshot\\" + testname + "_" + mytime + ".png";
-        FileUtils.copyFile(source, new File(location));
-        return location;
+        try {
+            String mytime = new SimpleDateFormat("yyyyMMddmmss").format(new Date());
+            TakesScreenshot ts = (TakesScreenshot) getDriver();
+            File source = ts.getScreenshotAs(OutputType.FILE);
+            String location = System.getProperty("user.dir") + "\\Screenshot\\" + testname + "_" + mytime + ".png";
+            FileUtils.copyFile(source, new File(location));
+            return location;
+        } catch (Exception e) {
+            System.out.println("Screenshot Error: " + e.getMessage());
+            return null;
+        }
     }
 
     public void doLogin(String username, String password) {
         try {
-            if (getDriver().findElements(By.name("username")).size() > 0) {
+            if (getDriver() != null && getDriver().findElements(By.name("username")).size() > 0) {
                 getDriver().findElement(By.name("username")).sendKeys(username);
                 getDriver().findElement(By.name("password")).sendKeys(password);
                 getDriver().findElement(By.xpath("//input[@value='Log In']")).click();
@@ -152,9 +177,9 @@ public class Baseoneprt {
 
     public void doRegister(String username, String password) {
         try {
-            if (getDriver().findElements(By.linkText("Register")).size() > 0) {
+            if (getDriver() != null && getDriver().findElements(By.linkText("Register")).size() > 0) {
                 getDriver().findElement(By.linkText("Register")).click();
-                WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(10));
+                WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(30));
                 
                 wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("customer.firstName"))).sendKeys("TestUser");
                 getDriver().findElement(By.id("customer.lastName")).sendKeys("Lastname");
@@ -164,8 +189,8 @@ public class Baseoneprt {
                 getDriver().findElement(By.id("customer.address.zipCode")).sendKeys("600001");
                 getDriver().findElement(By.id("customer.phoneNumber")).sendKeys("9876543210");
                 getDriver().findElement(By.id("customer.ssn")).sendKeys("12345");
-                getDriver().findElement(By.id("customer.username")).sendKeys(username);
                 
+                getDriver().findElement(By.id("customer.username")).sendKeys(username);
                 getDriver().findElement(By.id("customer.password")).sendKeys(password);
                 getDriver().findElement(By.id("customer.repeatedPassword")).sendKeys(password);
                 
