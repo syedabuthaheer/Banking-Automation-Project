@@ -30,6 +30,7 @@ import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
 
+
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 public class Baseoneprt {
@@ -64,7 +65,8 @@ public class Baseoneprt {
         try {
             
             if (browserName.equalsIgnoreCase("chrome")) {
-                WebDriverManager.chromedriver().setup();
+               
+                
                 ChromeOptions options = new ChromeOptions();
                 options.addArguments("--headless=new");
                 options.addArguments("--window-size=1920,1080");
@@ -72,8 +74,6 @@ public class Baseoneprt {
                 options.addArguments("--no-sandbox");
                 options.addArguments("--disable-dev-shm-usage");
                 options.addArguments("--remote-allow-origins=*");
-                
-                // DevTools error fix
                 options.addArguments("--remote-debugging-port=9222");
                 options.addArguments("--user-data-dir=C:\\Temp\\ChromeProfile"); 
 
@@ -82,7 +82,8 @@ public class Baseoneprt {
             
             
             else if (browserName.equalsIgnoreCase("edge")) {
-                WebDriverManager.edgedriver().setup();
+              
+                
                 EdgeOptions options = new EdgeOptions();
                 options.addArguments("--headless=new");
                 options.addArguments("--window-size=1920,1080");
@@ -90,8 +91,6 @@ public class Baseoneprt {
                 options.addArguments("--no-sandbox");
                 options.addArguments("--disable-dev-shm-usage");
                 options.addArguments("--remote-allow-origins=*");
-                
-                
                 options.addArguments("--remote-debugging-port=9222");
                 options.addArguments("--user-data-dir=C:\\Temp\\EdgeProfile"); 
 
@@ -169,7 +168,7 @@ public class Baseoneprt {
                 getDriver().findElement(By.id("customer.phoneNumber")).sendKeys("9876543210");
                 getDriver().findElement(By.id("customer.ssn")).sendKeys("12345");
                 
-            
+                
                 Random rand = new Random();
                 String uniqueUser = username + rand.nextInt(10000); 
                 
@@ -178,6 +177,8 @@ public class Baseoneprt {
                 getDriver().findElement(By.id("customer.repeatedPassword")).sendKeys(password);
                 
                 getDriver().findElement(By.xpath("//input[@value='Register']")).click();
+                
+                System.out.println("Registered USERNAME is: " + uniqueUser);
             }
         } catch (Exception e) {
             System.out.println("Register Error: " + e.getMessage());
