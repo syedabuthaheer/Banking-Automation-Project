@@ -30,7 +30,6 @@ import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.aventstack.extentreports.reporter.configuration.Theme;
 
-
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 public class Baseoneprt {
@@ -65,7 +64,7 @@ public class Baseoneprt {
         try {
             
             if (browserName.equalsIgnoreCase("chrome")) {
-               
+                
                 
                 ChromeOptions options = new ChromeOptions();
                 options.addArguments("--headless=new");
@@ -82,7 +81,7 @@ public class Baseoneprt {
             
             
             else if (browserName.equalsIgnoreCase("edge")) {
-              
+                
                 
                 EdgeOptions options = new EdgeOptions();
                 options.addArguments("--headless=new");
@@ -155,29 +154,30 @@ public class Baseoneprt {
     }
 
     public void doRegister(String username, String password) {
-    try {
-        if (getDriver() != null) {
-            getDriver().findElement(By.linkText("Register")).click();
-            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(30));
-            
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("customer.firstName"))).sendKeys("TestUser");
-            getDriver().findElement(By.id("customer.lastName")).sendKeys("Lastname");
-            getDriver().findElement(By.id("customer.address.street")).sendKeys("123 Street");
-            getDriver().findElement(By.id("customer.address.city")).sendKeys("Chennai");
-            getDriver().findElement(By.id("customer.address.state")).sendKeys("TamilNadu");
-            getDriver().findElement(By.id("customer.address.zipCode")).sendKeys("600001");
-            getDriver().findElement(By.id("customer.phoneNumber")).sendKeys("9876543210");
-            getDriver().findElement(By.id("customer.ssn")).sendKeys("12345");
-            
-    
-            getDriver().findElement(By.id("customer.username")).sendKeys(username);
-            
-            getDriver().findElement(By.id("customer.password")).sendKeys(password);
-            getDriver().findElement(By.id("customer.repeatedPassword")).sendKeys(password);
-            
-            getDriver().findElement(By.xpath("//input[@value='Register']")).click();
+        try {
+            if (getDriver() != null) {
+                getDriver().findElement(By.linkText("Register")).click();
+                WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(30));
+                
+                wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("customer.firstName"))).sendKeys("TestUser");
+                getDriver().findElement(By.id("customer.lastName")).sendKeys("Lastname");
+                getDriver().findElement(By.id("customer.address.street")).sendKeys("123 Street");
+                getDriver().findElement(By.id("customer.address.city")).sendKeys("Chennai");
+                getDriver().findElement(By.id("customer.address.state")).sendKeys("TamilNadu");
+                getDriver().findElement(By.id("customer.address.zipCode")).sendKeys("600001");
+                getDriver().findElement(By.id("customer.phoneNumber")).sendKeys("9876543210");
+                getDriver().findElement(By.id("customer.ssn")).sendKeys("12345");
+                
+               
+                getDriver().findElement(By.id("customer.username")).sendKeys(username);
+                
+                getDriver().findElement(By.id("customer.password")).sendKeys(password);
+                getDriver().findElement(By.id("customer.repeatedPassword")).sendKeys(password);
+                
+                getDriver().findElement(By.xpath("//input[@value='Register']")).click();
+            }
+        } catch (Exception e) {
+            System.out.println("Register Error: " + e.getMessage());
         }
-    } catch (Exception e) {
-        System.out.println("Register Error: " + e.getMessage());
     }
 }
