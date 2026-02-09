@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.Date;
-import java.util.Random; // Random class சேர்க்கப்பட்டுள்ளது
+import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
@@ -16,8 +16,6 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterMethod;
@@ -46,69 +44,59 @@ public class Baseoneprt {
 
     @BeforeSuite(groups = { "Smoke", "Regression", "Sanity" })
     public void TakeMyReport() {
-        
         new File("C:\\Temp").mkdirs();
-        
         String reportPath = System.getProperty("user.dir") + "\\reports\\mytest.html";
         ExtentSparkReporter report = new ExtentSparkReporter(reportPath);
-        report.config().setReportName("My Automation Test");
-        report.config().setDocumentTitle("My Test Result");
+        report.config().setReportName("Banking Automation Test");
+        report.config().setDocumentTitle("Test Result");
         report.config().setTheme(Theme.STANDARD);
         extent = new ExtentReports();
         extent.attachReporter(report);
         extent.setSystemInfo("QA Tester", "Syedabuthaheer");
-        extent.setSystemInfo("Environment", "Jenkins - SYSTEM User");
+        extent.setSystemInfo("Environment", "Jenkins Run");
     }
 
     @Parameters("browser")
     @BeforeMethod(groups = { "Smoke", "Regression", "Sanity" })
-    public void Browserlanuch(@Optional("edge") String browserName) {
+    public void Browserlanuch(@Optional("chrome") String browserName) {
         
         WebDriver driver = null;
-        
         try {
-        
+            
             if (browserName.equalsIgnoreCase("chrome")) {
-                try { WebDriverManager.chromedriver().setup(); } catch (Exception e) {}
-                
+                WebDriverManager.chromedriver().setup();
                 ChromeOptions options = new ChromeOptions();
-                options.addArguments("--headless=new"); 
-                options.addArguments("--disable-gpu");
+                options.addArguments("--headless=new");
                 options.addArguments("--window-size=1920,1080");
+                options.addArguments("--disable-gpu");
                 options.addArguments("--no-sandbox");
                 options.addArguments("--disable-dev-shm-usage");
                 options.addArguments("--remote-allow-origins=*");
                 
+                // DevTools error fix
+                options.addArguments("--remote-debugging-port=9222");
+                options.addArguments("--user-data-dir=C:\\Temp\\ChromeProfile"); 
+
                 driver = new ChromeDriver(options);
             } 
             
-    
+            
             else if (browserName.equalsIgnoreCase("edge")) {
-                try { WebDriverManager.edgedriver().setup(); } catch (Exception e) {}
-                
+                WebDriverManager.edgedriver().setup();
                 EdgeOptions options = new EdgeOptions();
                 options.addArguments("--headless=new");
-                options.addArguments("--disable-gpu");
                 options.addArguments("--window-size=1920,1080");
-                options.addArguments("--no-sandbox"); 
+                options.addArguments("--disable-gpu");
+                options.addArguments("--no-sandbox");
                 options.addArguments("--disable-dev-shm-usage");
                 options.addArguments("--remote-allow-origins=*");
-                options.addArguments("--disable-extensions");
                 
-        
                 
+                options.addArguments("--remote-debugging-port=9222");
+                options.addArguments("--user-data-dir=C:\\Temp\\EdgeProfile"); 
+
                 driver = new EdgeDriver(options);
             }
-        
-            else if (browserName.equalsIgnoreCase("firefox")) {
-                try { WebDriverManager.firefoxdriver().setup(); } catch (Exception e) {}
-                
-                FirefoxOptions options = new FirefoxOptions();
-                options.addArguments("--headless");
-                options.addArguments("--window-size=1920,1080");
-                driver = new FirefoxDriver(options);
-            }
-
         
             if(driver != null) {
                 tdriver.set(driver);
@@ -120,8 +108,7 @@ public class Baseoneprt {
             
         } catch (Exception e) {
             System.out.println("CRITICAL ERROR: Browser Launch Failed: " + e.getMessage());
-            
-            throw new RuntimeException("Failed to launch browser: " + e.getMessage());
+            throw new RuntimeException("Browser Launch Failed: " + e.getMessage());
         }
     }
 
@@ -141,17 +128,13 @@ public class Baseoneprt {
     }
 
     public String TakemyScreenshot(String testname) throws IOException {
-        if (getDriver() == null) {
-            return System.getProperty("user.dir") + "\\reports\\no_image.png"; 
-        }
-        
+        if (getDriver() == null) return System.getProperty("user.dir") + "\\reports\\no_image.png";
         try {
             String mytime = new SimpleDateFormat("yyyyMMddmmss").format(new Date());
             TakesScreenshot ts = (TakesScreenshot) getDriver();
             File source = ts.getScreenshotAs(OutputType.FILE);
             String folderPath = System.getProperty("user.dir") + "\\Screenshot\\";
             new File(folderPath).mkdirs();
-            
             String location = folderPath + testname + "_" + mytime + ".png";
             FileUtils.copyFile(source, new File(location));
             return location;
@@ -177,7 +160,6 @@ public class Baseoneprt {
             if (getDriver() != null) {
                 getDriver().findElement(By.linkText("Register")).click();
                 WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(30));
-                
                 wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("customer.firstName"))).sendKeys("TestUser");
                 getDriver().findElement(By.id("customer.lastName")).sendKeys("Lastname");
                 getDriver().findElement(By.id("customer.address.street")).sendKeys("123 Street");
@@ -196,9 +178,6 @@ public class Baseoneprt {
                 getDriver().findElement(By.id("customer.repeatedPassword")).sendKeys(password);
                 
                 getDriver().findElement(By.xpath("//input[@value='Register']")).click();
-                
-            
-                System.out.println("Registered with Username: " + uniqueUser);
             }
         } catch (Exception e) {
             System.out.println("Register Error: " + e.getMessage());
