@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.Date;
+import java.util.Random; // Random class சேர்க்கப்பட்டுள்ளது
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
@@ -61,7 +62,7 @@ public class Baseoneprt {
 
     @Parameters("browser")
     @BeforeMethod(groups = { "Smoke", "Regression", "Sanity" })
-    public void Browserlanuch(@Optional("chrome") String browserName) {
+    public void Browserlanuch(@Optional("edge") String browserName) {
         
         WebDriver driver = null;
         
@@ -78,14 +79,10 @@ public class Baseoneprt {
                 options.addArguments("--disable-dev-shm-usage");
                 options.addArguments("--remote-allow-origins=*");
                 
-                
-                String chromeData = "C:\\Temp\\ChromeData_" + System.nanoTime();
-                new File(chromeData).mkdirs();
-                options.addArguments("--user-data-dir=" + chromeData);
-                
                 driver = new ChromeDriver(options);
             } 
             
+    
             else if (browserName.equalsIgnoreCase("edge")) {
                 try { WebDriverManager.edgedriver().setup(); } catch (Exception e) {}
                 
@@ -96,12 +93,9 @@ public class Baseoneprt {
                 options.addArguments("--no-sandbox"); 
                 options.addArguments("--disable-dev-shm-usage");
                 options.addArguments("--remote-allow-origins=*");
+                options.addArguments("--disable-extensions");
                 
-                
-                String edgeData = "C:\\Temp\\EdgeData_" + System.nanoTime();
-                new File(edgeData).mkdirs();
-                options.addArguments("--user-data-dir=" + edgeData);
-                options.addArguments("--remote-debugging-port=9222");
+        
                 
                 driver = new EdgeDriver(options);
             }
@@ -119,13 +113,15 @@ public class Baseoneprt {
             if(driver != null) {
                 tdriver.set(driver);
                 getDriver().manage().window().maximize();
-                getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(60));
-                getDriver().manage().timeouts().pageLoadTimeout(Duration.ofSeconds(120));
+                getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
+                getDriver().manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
                 getDriver().get("https://parabank.parasoft.com/parabank/index.htm");
             }
             
         } catch (Exception e) {
             System.out.println("CRITICAL ERROR: Browser Launch Failed: " + e.getMessage());
+            
+            throw new RuntimeException("Failed to launch browser: " + e.getMessage());
         }
     }
 
@@ -146,7 +142,6 @@ public class Baseoneprt {
 
     public String TakemyScreenshot(String testname) throws IOException {
         if (getDriver() == null) {
-            System.out.println("Driver is NULL. Returning dummy path.");
             return System.getProperty("user.dir") + "\\reports\\no_image.png"; 
         }
         
@@ -161,14 +156,13 @@ public class Baseoneprt {
             FileUtils.copyFile(source, new File(location));
             return location;
         } catch (Exception e) {
-            System.out.println("Screenshot Error: " + e.getMessage());
             return System.getProperty("user.dir") + "\\reports\\error_image.png";
         }
     }
 
     public void doLogin(String username, String password) {
         try {
-            if (getDriver() != null && getDriver().findElements(By.name("username")).size() > 0) {
+            if (getDriver() != null) {
                 getDriver().findElement(By.name("username")).sendKeys(username);
                 getDriver().findElement(By.name("password")).sendKeys(password);
                 getDriver().findElement(By.xpath("//input[@value='Log In']")).click();
@@ -180,7 +174,7 @@ public class Baseoneprt {
 
     public void doRegister(String username, String password) {
         try {
-            if (getDriver() != null && getDriver().findElements(By.linkText("Register")).size() > 0) {
+            if (getDriver() != null) {
                 getDriver().findElement(By.linkText("Register")).click();
                 WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(30));
                 
@@ -193,11 +187,18 @@ public class Baseoneprt {
                 getDriver().findElement(By.id("customer.phoneNumber")).sendKeys("9876543210");
                 getDriver().findElement(By.id("customer.ssn")).sendKeys("12345");
                 
-                getDriver().findElement(By.id("customer.username")).sendKeys(username);
+            
+                Random rand = new Random();
+                String uniqueUser = username + rand.nextInt(10000); 
+                
+                getDriver().findElement(By.id("customer.username")).sendKeys(uniqueUser);
                 getDriver().findElement(By.id("customer.password")).sendKeys(password);
                 getDriver().findElement(By.id("customer.repeatedPassword")).sendKeys(password);
                 
                 getDriver().findElement(By.xpath("//input[@value='Register']")).click();
+                
+            
+                System.out.println("Registered with Username: " + uniqueUser);
             }
         } catch (Exception e) {
             System.out.println("Register Error: " + e.getMessage());
